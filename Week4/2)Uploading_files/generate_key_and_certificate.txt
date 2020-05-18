@@ -1,0 +1,8 @@
+1) Go to the bin folder... by typing "cd ./bin"
+Than, run the following commands
+
+openssl genrsa 1024 > private.key ; it means that we are going to generate a private key of size 1024 Bytes which will be stored in "private.key" file
+
+openssl req -new -key private.key -out cert.csr ;it means that we want to generate certificete with the key "private.key" and it will be stored in "cert.csr" file
+
+openssl x509 -req -in cert.csr -signkey private.key -out certificate.pem; the sign in process

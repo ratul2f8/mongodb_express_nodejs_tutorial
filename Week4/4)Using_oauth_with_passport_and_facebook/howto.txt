@@ -1,0 +1,3 @@
+In the public/index.html file under "window.fbAsyncInit: function replace the 'YOUR_CLIENT_ID' field with the APP_ID issued by Facebook.
+Than include the both secret_key and app_id field to config.js
+Than the strategy has been defined in authenticate.js file

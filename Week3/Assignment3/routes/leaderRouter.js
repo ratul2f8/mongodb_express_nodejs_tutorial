@@ -1,0 +1,112 @@
+const express = require('express')
+const bodyParser = require('body-parser')
+const leaderRouter = express.Router()
+leaderRouter.use(bodyParser.json())
+const Leaders = require('../models/leaders')
+const authenticate = require('../authenticate');
+//leaders
+leaderRouter.route('/')
+    .get((req, res, next) => {
+        Leaders.find({})
+            .then((leaders) => {
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'application/json')
+                res.json(leaders)
+            }, (err) => next(err))
+            .catch(err => next(err))
+    })
+    .post(authenticate.verifyUser, (req, res, next) => {
+        if (authenticate.verifyAdmin(req)) {
+            Leaders.create(req.body)
+                .then((leader) => {
+                    console.log('Leader Created ', leader)
+                    res.statusCode = 200
+                    res.setHeader('Content-Type', 'application/json')
+                    res.json(leader)
+                }, (err) => next(err))
+                .catch(err => next(err))
+        } else {
+            res.statusCode = 403;
+            res.json({
+                "message": "You are not authorized to perform this operation!"
+            });
+            res.send()
+        }
+    })
+    .put(authenticate.verifyUser, (req, res, next) => {
+        res.statusCode = 403 //request not supported
+        res.end('PUT operation not supported for url : /leaders')
+    })
+    .delete(authenticate.verifyUser, (req, res, next) => {
+        if (authenticate.verifyAdmin(req)) {
+            Leaders.remove({})
+                .then((resp) => {
+                    res.statusCode = 200
+                    res.setHeader('Content-Type', 'application/json')
+                    res.json(resp)
+                }, (err) => next(err))
+                .catch(err => next(err))
+        } else {
+            res.statusCode = 403;
+            res.json({
+                "message": "You are not authorized to perform this operation!"
+            });
+            res.send()
+        }
+    })
+
+//leaders/:leaderId
+leaderRouter.route('/:leaderId')
+    .get((req, res, next) => {
+        Leaders.findById(req.params.leaderId)
+            .then(leader => {
+                res.statusCode = 200
+                res.setHeader('Content-Type', 'application/json')
+                res.json(leader)
+            }, (err) => next(err))
+            .catch(err => next(err))
+    })
+    .post(authenticate.verifyUser, (req, res, next) => {
+        res.statusCode = 403 //request not supported
+        res.end('POST operation is not supported for the promotion ' + req.params.leaderId)
+    })
+    .put(authenticate.verifyUser, (req, res, next) => {
+        if (authenticate.verifyAdmin(req)) {
+            Leaders.findByIdAndUpdate(req.params.leaderId, {
+                    $set: req.body
+                }, {
+                    new: true
+                })
+                .then((leader) => {
+                    res.statusCode = 200
+                    res.setHeader('Content-Type', 'application/json')
+                    res.json(leader)
+                }, (err) => next(err))
+                .catch(err => next(err))
+        } else {
+            res.statusCode = 403;
+            res.json({
+                "message": "You are not authorized to perform this operation!"
+            });
+            res.send()
+        }
+    })
+    .delete(authenticate.verifyUser, (req, res, next) => {
+        if (authenticate.verifyAdmin(req)) {
+            Leaders.findByIdAndRemove(req.params.leaderId)
+                .then((resp) => {
+                    res.statusCode = 200
+                    res.setHeader('Content-Type', 'application/json')
+                    res.json(resp)
+                }, (err) => next(err))
+                .catch(err => next(err))
+        } else {
+            res.statusCode = 403;
+            res.json({
+                "message": "You are not authorized to perform this operation!"
+            });
+            res.send()
+        }
+    })
+
+module.exports = leaderRouter;
